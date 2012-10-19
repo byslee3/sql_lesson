@@ -1,4 +1,5 @@
 import sqlite3
+import re
 
 DB = None
 CONN = None
@@ -63,7 +64,7 @@ def main():
     connect_to_db()
     command = None
     next_command = None
-    while command != "quit" and next_command != "quit" and next_command != "n":
+    while True:
 
         ### Need to also add validation -- if someone enters arguments into a query, but it's not in the table
         ### Currently it crashes because it can't find the record in the SQL database
@@ -81,47 +82,79 @@ def main():
 
         command = raw_input("HBA Database> ")
 
-        #Is there a simpler way to do this? This seems to be a common case.
-        if command == '1' or command == '2' or command == '3' or command == '4' or command == '5' or command == '6' or command == '7':
-            numeric_command = int(command)     
-        
-        if numeric_command == 1:
+        if command == "quit":
+            break
+
+        #Validating with regex not necessary, but I'm putting it in for practice
+        regex1 = re.compile('\d+')
+        command_is_numeric = regex1.match(command)
+        if command_is_numeric:
+            numeric_command = int(command)
+        else:
+            numeric_command = 999
+
+        #Dictionary of commands
+        def function1():
             github = raw_input("What is the student's Github account name? ")
             get_student_by_github(github)
-        elif numeric_command == 2:
+
+        def function2():
             first_name = raw_input("What is the student's first name? ")
             last_name = raw_input("What is the student's last name? ")
             github = raw_input("What is the student's Github account name? ")
             make_new_student(first_name,last_name,github)
-        elif numeric_command == 3:
+
+        def function3():
             title = raw_input("What is the title of the project? ")
             get_project_by_title(title)
-        elif numeric_command == 4:
+
+        def function4():
             title = raw_input("What is the title of the project? ")
             description = raw_input("Please describe the project: ")
             max_grade = raw_input("What is the max grade on the project? ")
             make_new_project(title,description,max_grade)
-        elif numeric_command == 5:
+
+        def function5():
             github = raw_input("What is the student's Github account name? ")
             get_all_grades(github)
-        elif numeric_command == 6:
+
+        def function6():
             github = raw_input("What is the student's Github account name? ")
             title = raw_input("Which project are you looking for? ")
             get_grade_by_project(github,title)
-        elif numeric_command == 7:
+
+        def function7():
             github = raw_input("What is the student's Github account name? ")
             title = raw_input("Which project are you changing the grade for? ")
             new_grade = int(raw_input("What is the new grade? "))
             overwrite_old_grade(github, title, new_grade)
 
+        def function999():
+            print "Please enter a valid command."
+
+        command_dictionary = {
+        1:function1,           
+        2:function2,
+        3:function3,
+        4:function4,
+        5:function5,
+        6:function6,
+        7:function7,
+        999:function999}
+
+        func_to_run = command_dictionary[numeric_command]
+        #This dictionary lookup is faster than an if/elif structure if you have many potential commands
+
+        func_to_run()
+
+        #Reset for the next round through the loop
+        numeric_command = None
+
         next_command = raw_input("Continue? ")
 
-        #input_string = raw_input("HBA Database> ")
-        #tokens = input_string.split(",")
-        #command = tokens[0]
-        #args = tokens[1:]
+        if next_command == "quit" or next_command == "n":
+            break
     
-
     CONN.close()
 
 if __name__ == "__main__":
